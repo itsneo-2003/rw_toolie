@@ -11,7 +11,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/subscription-requests")
-@CrossOrigin(origins = "*")
 public class SubscriptionRequestController {
 
     private final SubscriptionRequestService subscriptionRequestService;

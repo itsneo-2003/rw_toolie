@@ -27,7 +27,7 @@ public class ReportService {
     }
 
     /**
-     * Returns all reports for a given group id.
+     * Returns all reports for a given group id (from demo 1).
      * Throws RuntimeException if group not found.
      */
     public List<Report> getReportsByGroupId(Integer groupId) {
@@ -35,19 +35,18 @@ public class ReportService {
         if (groupOpt.isEmpty()) {
             throw new RuntimeException("Group not found with id: " + groupId);
         }
-        // use repository method to fetch reports by group id
         return reportRepository.findByGroup_Id(groupId);
     }
 
     /**
-     * Optional helper: get reports by group entity
+     * Optional helper: get reports by group entity (from demo 1)
      */
     public List<Report> getReportsByGroup(Group group) {
         return reportRepository.findByGroup_Id(group.getId());
     }
 
     /**
-     * Returns the 10 most recent reports from all groups a user is subscribed to.
+     * Returns the 10 most recent reports from all groups a user is subscribed to (from demo 1).
      * Throws RuntimeException if user not found.
      */
     public List<ReportDTO> getRecentReportsByUserEmail(String email) {
@@ -62,5 +61,19 @@ public class ReportService {
         return allReports.stream()
                 .limit(10)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Returns all reports with a specific status (from demo 2).
+     */
+    public List<Report> getReportsByStatus(String status) {
+        return reportRepository.findByStatus(status);
+    }
+
+    /**
+     * Returns count of reports with a specific status (from demo 2).
+     */
+    public long countReportsByStatus(String status) {
+        return reportRepository.countByStatus(status);
     }
 }
