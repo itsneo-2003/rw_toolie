@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import opsService from '../../components/services/opsService';
 import './notification.css';
 
 const Notification = ({ reports, isOpen, onClose }) => {
@@ -7,46 +8,27 @@ const Notification = ({ reports, isOpen, onClose }) => {
   const [pendingReports, setPendingReports] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // API integration code - uncomment when backend is ready
-  /*
+  // Fetch pending reports when notification opens
   useEffect(() => {
     if (!isOpen) return;
 
     const fetchPendingReports = async () => {
       try {
-        const response = await fetch('http://localhost:8080/api/reports/pending', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setPendingReports(data);
-        } else {
-          console.error('Failed to fetch pending reports');
-          setPendingReports(reports.filter(report => report.status === 'Pending'));
-        }
+        const data = await opsService.getPendingReports();
+        setPendingReports(data);
       } catch (error) {
         console.error('Error fetching pending reports:', error);
-        setPendingReports(reports.filter(report => report.status === 'Pending'));
+        // Fallback to passed reports prop
+        setPendingReports(reports.filter(report => 
+          report.status === 'pending' || report.status === 'Pending'
+        ));
       } finally {
         setLoading(false);
       }
     };
 
     fetchPendingReports();
-  }, [isOpen, token, reports]);
-  */
-
-  // Temporary useEffect for demo - remove when API is integrated
-  useEffect(() => {
-    if (!isOpen) return;
-    setPendingReports(reports.filter(report => report.status === 'Pending'));
-    setLoading(false);
-  }, [isOpen, reports]);
+  }, [isOpen, reports, token]);
 
   if (!isOpen) return null;
 
@@ -57,7 +39,9 @@ const Notification = ({ reports, isOpen, onClose }) => {
         <button className='close-btn' onClick={onClose}>×</button>
       </div>
       <div className='notification-body'>
-        {pendingReports.length > 0 ? (
+        {loading ? (
+          <div className='loading-spinner'>Loading...</div>
+        ) : pendingReports.length > 0 ? (
           <ul className='notification-list'>
             {pendingReports.map((report) => (
               <li key={report.id} className='notification-item'>

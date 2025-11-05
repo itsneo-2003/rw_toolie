@@ -172,6 +172,13 @@
   font-size: 14px;
 }
 
+.loading-spinner {
+  padding: 40px 20px;
+  text-align: center;
+  color: #666;
+  font-size: 14px;
+}
+
 /* Scrollbar styling */
 .notification-body::-webkit-scrollbar {
   width: 6px;
@@ -189,3 +196,5 @@
 .notification-body::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
+
+

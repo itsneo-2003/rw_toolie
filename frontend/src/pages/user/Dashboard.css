@@ -142,224 +142,342 @@
   letter-spacing: 0.5px;
 }
 
+/* Dashboard Layout */
 .dashboard-container {
-    padding: 1.5rem;
-    width: 100%;
-    height: 100vh;
-    overflow-y: auto;
-    overflow-x: hidden;
-  }
+  padding: 1.5rem;
+  width: 100%;
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
 
-  .dashboard-header {
-    position: relative;
-    margin-bottom: 1.5rem;
-    min-height: 50px;
-  }
- 
-  .dashboard-header-left {
-    display: inline-block;
-    vertical-align: top;
-  }
- 
-  .dashboard-header-right {
-    position: absolute;
-    right: 0;
-    top: 0;
-  }
- 
-  .groups-section {
-    margin-bottom: 3rem;
-  }
- 
-  .groups-title {
-    margin-bottom: 0;
-  }
- 
-  .groups-carousel {
-    position: relative;
-  }
- 
-  .groups-grid-container {
-    margin-left: 70px;
-    margin-right: 70px;
-  }
- 
-  
-  .carousel-btn {
-    min-width: 50px;
-    height: 50px;
-    border: none;
-    background: transparent;
-    font-size: 2.5rem;
-    color: #333;
-    z-index: 10;
-  }
- 
-  .carousel-btn:disabled {
-    cursor: not-allowed;
-    opacity: 0.3;
-  }
- 
-  .carousel-btn:not(:disabled) {
-    cursor: pointer;
-  }
- 
-  .carousel-btn-prev {
-    position: absolute;
-    left: 0;
-    top: 50%;
-    transform: translateY(-50%);
-  }
- 
-  .carousel-btn-next {
-    position: absolute;
-    right: 0;
-    top: 50%;
-    transform: translateY(-50%);
-  }
- 
-  .group-card {
-    cursor: pointer;
-    border: 2px solid #e0e0e0;
-    border-radius: 12px;
-    height: 100%;
-    transition: all 0.3s ease;
-    background: linear-gradient(135deg, #ffffff 0%, #f5f5f5 100%);
-  }
+.dashboard-header {
+  position: relative;
+  margin-bottom: 1.5rem;
+  min-height: 50px;
+}
 
-  .group-card:hover {
-    border-color: #4CAF50;
-    transform: translateY(-4px);
-    box-shadow: 0 6px 16px rgba(76, 175, 80, 0.3);
-    background: linear-gradient(135deg, #e3f2fd 0%, #e8f5e9 100%);
-  }
+.dashboard-header-left {
+  display: inline-block;
+  vertical-align: top;
+}
 
-  .group-card .card-body {
-    padding: 1rem;
-  }
- 
-  .group-icon {
-    display: none;
-  }
+.dashboard-header-right {
+  position: absolute;
+  right: 0;
+  top: 0;
+}
 
-  .group-card-title {
-    font-size: 1rem;
-    font-weight: 600;
-    margin-bottom: 0;
-  }
- 
-  
-  .page-indicator {
-    text-align: center;
-    margin-top: 1rem;
-  }
- 
-  
-  .reports-section {
-    margin-top: 2rem;
-  }
- 
-  .reports-header {
-    margin-bottom: 1rem;
-  }
- 
-  .reports-title {
-    display: inline-block;
-    margin-bottom: 0;
-  }
- 
-  .download-btn {
-    float: right;
-    background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%);
-    border: none;
-    color: white;
-    font-weight: 600;
-    transition: all 0.3s ease;
-  }
+/* Groups Section */
+.groups-section {
+  margin-bottom: 3rem;
+}
 
-  .download-btn:hover {
-    background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
-    transform: scale(1.05);
-    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.4);
-  }
+.groups-title {
+  margin-bottom: 0;
+}
 
-  .download-btn:disabled {
-    background: #9e9e9e;
-    opacity: 0.6;
-    transform: none;
-  }
- 
-  
-  .table-checkbox {
-    border: 2px solid black;
-  }
- 
-  
-  .reports-table {
-    cursor: pointer;
-  }
+.groups-carousel {
+  position: relative;
+}
 
-  .reports-table thead {
-    background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%) !important;
-  }
+.groups-grid-container {
+  margin-left: 70px;
+  margin-right: 70px;
+}
 
-  .reports-table thead th {
-    color: white !important;
-    border-color: #1976D2 !important;
-  }
+.carousel-btn {
+  min-width: 50px;
+  height: 50px;
+  border: none;
+  background: transparent;
+  font-size: 2.5rem;
+  color: #333;
+  z-index: 10;
+}
 
-  
-  .action-icon {
-    font-size: 1rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
+.carousel-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.3;
+}
 
-  .star-icon {
-    color: #ffc107;
-  }
+.carousel-btn:not(:disabled) {
+  cursor: pointer;
+}
 
-  .star-icon:hover {
-    color: #ff9800;
-    transform: scale(1.15);
-  }
+.carousel-btn-prev {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
 
-  .download-icon {
-    color: #4CAF50;
-  }
+.carousel-btn-next {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
 
-  .download-icon:hover {
-    color: #2196F3;
-    transform: scale(1.15);
-  }
+.group-card {
+  cursor: pointer;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  height: 100%;
+  transition: all 0.3s ease;
+  background: linear-gradient(135deg, #ffffff 0%, #f5f5f5 100%);
+}
 
-  /* Table action column styling */
-  .action-column-header {
-    width: 80px;
-    text-align: center;
-  }
+.group-card:hover {
+  border-color: #4CAF50;
+  transform: translateY(-4px);
+  box-shadow: 0 6px 16px rgba(76, 175, 80, 0.3);
+  background: linear-gradient(135deg, #e3f2fd 0%, #e8f5e9 100%);
+}
 
-  .action-column-cell {
-    text-align: center;
-  }
+.group-card .card-body {
+  padding: 1rem;
+}
 
-  /* Card header styling */
-  .card-header-content {
-    display: inline-block;
-    vertical-align: middle;
-  }
+.group-icon {
+  display: none;
+}
 
-  .card-header-actions {
-    float: right;
-  }
+.group-card-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0;
+}
 
-  .back-button {
-    display: inline-block;
-    margin-right: 1rem;
-    vertical-align: middle;
-  }
+.page-indicator {
+  text-align: center;
+  margin-top: 1rem;
+}
 
-  .reports-title-header {
-    display: inline-block;
-    margin-bottom: 0;
-  }
+/* Reports Section */
+.reports-section {
+  margin-top: 2rem;
+}
+
+.reports-header {
+  margin-bottom: 1rem;
+}
+
+.reports-title {
+  display: inline-block;
+  margin-bottom: 0;
+}
+
+/* Download Buttons */
+.download-btn {
+  float: right;
+  background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%);
+  border: none;
+  color: white;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.download-btn:hover {
+  background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(33, 150, 243, 0.4);
+}
+
+.download-btn:disabled {
+  background: #9e9e9e;
+  opacity: 0.6;
+  transform: none;
+}
+
+/* Table */
+.table-checkbox {
+  border: 2px solid black;
+}
+
+.reports-table {
+  cursor: pointer;
+}
+
+.reports-table thead {
+  background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%) !important;
+}
+
+.reports-table thead th {
+  color: white !important;
+  border-color: #1976D2 !important;
+}
+
+/* Action Icons */
+.action-icon {
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.star-icon {
+  color: #ffc107;
+}
+
+.star-icon:hover {
+  color: #ff9800;
+  transform: scale(1.15);
+}
+
+.download-icon {
+  color: #4CAF50;
+}
+
+.download-icon:hover {
+  color: #2196F3;
+  transform: scale(1.15);
+}
+
+/* Table Action Columns */
+.action-column-header {
+  width: 80px;
+  text-align: center;
+}
+
+.action-column-cell {
+  text-align: center;
+}
+
+/* Card Header Styling */
+.card-header-content {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.card-header-actions {
+  float: right;
+}
+
+.back-button {
+  display: inline-block;
+  margin-right: 1rem;
+  vertical-align: middle;
+}
+
+.reports-title-header {
+  display: inline-block;
+  margin-bottom: 0;
+}
+
+/* ---------------- Search Bar Alignment Fix ---------------- */
+.dashboard-header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.dashboard-header-right input[type="text"],
+.dashboard-header-right input[type="search"] {
+  height: 40px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  padding: 0 12px;
+  font-size: 0.95rem;
+}
+
+.dashboard-header-right button {
+  height: 40px;
+  border-radius: 8px;
+  padding: 0 16px;
+  font-weight: 600;
+  background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+  color: #fff;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.dashboard-header-right button:hover {
+  background: linear-gradient(135deg, #1976D2 0%, #0D47A1 100%);
+  transform: scale(1.05);
+}
+
+.dashboard-header-right .form-control {
+  box-shadow: none !important;
+  transition: all 0.2s ease;
+}
+
+.dashboard-header-right .form-control:focus {
+  border-color: #2196F3;
+  box-shadow: 0 0 5px rgba(33, 150, 243, 0.3);
+}
+
+/* ---------------- Search Bar Layout Fix (Side by Side) ---------------- */
+.dashboard-header-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  flex-wrap: nowrap;
+}
+
+.dashboard-header-right form {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+}
+
+.dashboard-header-right input[type="text"],
+.dashboard-header-right input[type="search"],
+.dashboard-header-right .form-control {
+  height: 42px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  padding: 0 12px;
+  font-size: 0.95rem;
+  width: 220px; /* adjust width as needed */
+  box-shadow: none;
+}
+
+.dashboard-header-right button {
+  height: 42px;
+  border-radius: 8px;
+  padding: 0 18px;
+  font-weight: 600;
+  background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+  color: #fff;
+  border: none;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.dashboard-header-right button:hover {
+  background: linear-gradient(135deg, #1976D2 0%, #0D47A1 100%);
+  transform: scale(1.05);
+}
+
+.dashboard-header-right .form-control:focus {
+  border-color: #2196F3;
+  box-shadow: 0 0 5px rgba(33, 150, 243, 0.3);
+}
+/* ---------------- Blue Header for Reports Table ---------------- */
+.table-dark {
+  background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%) !important;
+  color: #fff !important;
+  border-color: #1976D2 !important;
+}
+
+.table-dark th {
+  background: transparent !important;
+  color: #fff !important;
+  font-weight: 600;
+  border-color: #1976D2 !important;
+}
+
+.table-dark th:first-child {
+  border-top-left-radius: 6px;
+}
+
+.table-dark th:last-child {
+  border-top-right-radius: 6px;
+}
+
+/* Optional: subtle shadow for a modern floating effect */
+.table-dark {
+  box-shadow: 0 2px 6px rgba(33, 150, 243, 0.3);
+}

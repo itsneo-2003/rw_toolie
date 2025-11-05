@@ -28,7 +28,7 @@ const Sidebar = () => {
       {
         path: "/User/Dashboard",
         icon: "bi bi-house-door",
-        label: "Dashboard"
+        label: "Home"
       },
       {
         path: "/subscription_status",

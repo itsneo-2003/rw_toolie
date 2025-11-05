@@ -17,7 +17,7 @@ const Subscription_Status = () => {
   const [error, setError] = useState(null);
 
   // HARD-CODED email as requested
-  const email = "admin@example.com";
+  const email = "user1@example.com";
 
   useEffect(() => {
     // Immediately-invoked async function inside useEffect

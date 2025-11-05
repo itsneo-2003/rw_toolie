@@ -24,7 +24,7 @@ const User_Subscribe = () => {
   // const USER_EMAIL = user?.email || "admin@example.com";
   // For now user asked to hardcode admin@example.com — change as required:
   const { token } = useAuth(); // left in case you later want to use it
-  const USER_EMAIL = "admin@example.com";
+  const USER_EMAIL = "user1@example.com";
 
   // UI state
   const [searchTerm, setSearchTerm] = useState("");

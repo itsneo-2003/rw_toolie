@@ -1,8 +1,7 @@
 
-
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from '../../context/AuthContext';
-import reportsData from "../../Data/reports.json";
+import opsService from '../../components/services/opsService';
 import "./OpsPage.css";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Notification from '../../components/notification/notification';
@@ -12,201 +11,300 @@ const OpsPage = () => {
   const [reports, setReports] = useState([]);
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  // Static data for demo - will be replaced with API call when backend is ready
-  const staticReports = reportsData.map((r) => ({ ...r, status: "Pending" }));
-
-  // API integration code - uncomment when backend is ready
-  /*
-  useEffect(() => {
-    const fetchPendingReports = async () => {
-      try {
-        const response = await fetch('http://localhost:8080/api/reports/pending', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setReports(data.map(r => ({ ...r, status: "Pending" })));
-        } else {
-          console.error('Failed to fetch pending reports');
-          setReports(staticReports);
-        }
-      } catch (error) {
-        console.error('Error fetching pending reports:', error);
-        setReports(staticReports);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    const fetchTransferLogs = async () => {
-      try {
-        const response = await fetch('http://localhost:8080/api/transfer-logs', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setLogs(data);
-        } else {
-          console.error('Failed to fetch transfer logs');
-          setLogs([]);
-        }
-      } catch (error) {
-        console.error('Error fetching transfer logs:', error);
-        setLogs([]);
-      }
-    };
-
-    fetchPendingReports();
-    fetchTransferLogs();
-  }, [token]);
-  */
-
-  // Temporary useEffect for demo - remove when API is integrated
-  useEffect(() => {
-    setReports(staticReports);
-    setLogs([]);
-    setLoading(false);
-  }, []);
   const [searchReports, setSearchReports] = useState("");
   const [searchLogs, setSearchLogs] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-
-  // Progress state
   const [isSyncing, setIsSyncing] = useState(false);
   const [currentSyncIndex, setCurrentSyncIndex] = useState(0);
   const [totalSync, setTotalSync] = useState(0);
+  const [error, setError] = useState(null);
 
-  // Simulate random failure (10%)
-  // const simulateFailure = () => Math.random() < 0.1;
-  const simulateFailure = () => false;
+  // For new reports notification
+  const [lastCheckTime, setLastCheckTime] = useState(new Date());
+  const [newReportsAlert, setNewReportsAlert] = useState(null);
+  
+  // ✅ NEW - Track which reports we've already alerted about
+  const alertedReportsRef = useRef(new Set());
 
-  // Sync single report
-  const handleSync = async (reportId, index = 1, total = 1) => {
-    setIsSyncing(true);
-    setCurrentSyncIndex(index);
-    setTotalSync(total);
+  // Fetch pending reports on component mount
+  useEffect(() => {
+    fetchPendingReports();
+    fetchTransferLogs();
+  }, []);
 
-    await new Promise((resolve) => setTimeout(resolve, 800));
+  // Request browser notification permission
+  useEffect(() => {
+    if (Notification.permission === "default") {
+      Notification.requestPermission().then(permission => {
+        console.log('Notification permission:', permission);
+      });
+    }
+  }, []);
 
-    let newLog = null;
-
-    const updatedReports = reports.map((report) => {
-      if (report.id === reportId && report.status === "Pending") {
-        if (simulateFailure()) {
-          newLog = {
-            id: report.id, // Reuse report ID
-            name: report.name,
-            reportDate: report.date,
-            status: "Failed",
-            folder: report.group || "Default",
-            time: new Date().toISOString(),
-            error: "Permission denied",
-          };
-        } else {
-          newLog = {
-            id: report.id, // Reuse report ID
-            name: report.name,
-            reportDate: report.date,
-            status: "Synced",
-            folder: report.group || "Default",
-            time: new Date().toISOString(),
-          };
+  // ✅ FIXED - Poll for new reports with tracking
+  useEffect(() => {
+    const pollForNewReports = async () => {
+      try {
+        const result = await opsService.checkNewReports(lastCheckTime);
+        
+        if (result.hasNew) {
+          console.log(`Found ${result.count} new reports:`, result.reports);
+          
+          // ✅ Filter out reports we've already alerted about
+          const newUnalertedReports = result.reports.filter(
+            reportName => !alertedReportsRef.current.has(reportName)
+          );
+          
+          // ✅ Only show alert if there are NEW reports we haven't alerted about
+          if (newUnalertedReports.length > 0) {
+            // Set alert state
+            setNewReportsAlert({
+              count: newUnalertedReports.length,
+              reports: newUnalertedReports
+            });
+            
+            // Browser notification
+            if (Notification.permission === "granted") {
+              const reportList = newUnalertedReports.slice(0, 3).join('\n');
+              const moreText = newUnalertedReports.length > 3 
+                ? `\n...and ${newUnalertedReports.length - 3} more` 
+                : '';
+              
+              new Notification("📥 New Reports Uploaded!", {
+                body: `${newUnalertedReports.length} new report(s) ready to sync:\n${reportList}${moreText}`,
+                icon: '/logo192.png',
+                tag: 'new-reports',
+                requireInteraction: false
+              });
+            }
+            
+            // ✅ Mark these reports as alerted
+            newUnalertedReports.forEach(reportName => {
+              alertedReportsRef.current.add(reportName);
+            });
+          }
+          
+          // Update last check time
+          setLastCheckTime(new Date(result.latestTimestamp));
         }
-        return { ...report, status: newLog.status };
+      } catch (error) {
+        console.error('Error checking for new reports:', error);
       }
-      return report;
-    });
+    };
 
-    setReports(updatedReports.filter(r => r.status === "Pending")); // remove synced reports
-    if (newLog) setLogs((prev) => [newLog, ...prev]);
-    setIsSyncing(false);
+    // Initial check after 5 seconds
+    const initialTimeout = setTimeout(pollForNewReports, 5000);
+
+    // Poll every 30 seconds
+    const interval = setInterval(pollForNewReports, 30000);
+
+    return () => {
+      clearTimeout(initialTimeout);
+      clearInterval(interval);
+    };
+  }, [lastCheckTime]);
+
+  // ✅ NEW - Clear alerted reports when they're synced
+  const clearAlertedReport = (reportName) => {
+    alertedReportsRef.current.delete(reportName);
+  };
+
+  const fetchPendingReports = async () => {
+    try {
+      setLoading(true);
+      const data = await opsService.getPendingReports();
+      setReports(data);
+      setError(null);
+    } catch (err) {
+      setError('Failed to fetch pending reports');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchTransferLogs = async () => {
+    try {
+      const data = await opsService.getTransferLogs(startDate, endDate);
+      setLogs(data);
+    } catch (err) {
+      console.error('Failed to fetch transfer logs:', err);
+    }
+  };
+
+  const handleSync = async (reportId) => {
+    try {
+      setIsSyncing(true);
+      setCurrentSyncIndex(1);
+      setTotalSync(1);
+
+      const result = await opsService.syncReport(reportId);
+
+      // ✅ Clear from alerted set when synced
+      const syncedReport = reports.find(r => r.id === reportId);
+      if (syncedReport) {
+        clearAlertedReport(syncedReport.name);
+      }
+
+      // Refetch pending reports and transfer logs
+      await fetchPendingReports();
+      await fetchTransferLogs();
+
+      setError(null);
+    } catch (err) {
+      setError(`Failed to sync report: ${err.message}`);
+      console.error(err);
+    } finally {
+      setIsSyncing(false);
+    }
   };
 
   // Sync all pending reports
   const handleSyncAll = async () => {
-    const pendingReports = reports.filter((r) => r.status === "Pending");
+    const pendingReports = reports.filter(r => r.status === 'pending' || r.status === 'Pending');
     if (pendingReports.length === 0) return;
 
-    setIsSyncing(true);
-    setTotalSync(pendingReports.length);
+    try {
+      setIsSyncing(true);
+      setTotalSync(pendingReports.length);
 
-    const newLogs = [];
+      const result = await opsService.syncAllReports();
 
-    for (let i = 0; i < pendingReports.length; i++) {
-      setCurrentSyncIndex(i + 1);
-      await new Promise((resolve) => setTimeout(resolve, 800));
-
-      const report = pendingReports[i];
-      const status = simulateFailure() ? "Failed" : "Synced";
-
-      newLogs.push({
-        id: report.id, // Reuse report ID
-        name: report.name,
-        reportDate: report.date,
-        status,
-        folder: report.group || "Default",
-        time: new Date().toISOString(),
-        error: status === "Failed" ? "Permission denied" : null,
+      // ✅ Clear all synced reports from alerted set
+      pendingReports.forEach(report => {
+        clearAlertedReport(report.name);
       });
-    }
 
-    // Remove synced reports from "Reports to be Synced"
-    setReports((prev) => prev.filter((r) => r.status === "Pending" && !newLogs.find(l => l.name === r.name)));
-    setLogs((prev) => [...newLogs, ...prev]);
-    setIsSyncing(false);
+      // Refetch pending reports and transfer logs
+      await fetchPendingReports();
+      await fetchTransferLogs();
+
+      setError(null);
+    } catch (err) {
+      setError(`Failed to sync all reports: ${err.message}`);
+      console.error(err);
+    } finally {
+      setIsSyncing(false);
+      setCurrentSyncIndex(0);
+      setTotalSync(0);
+    }
   };
 
   // Date range helper
   const isWithinDateRange = (log) => {
     if (!startDate && !endDate) return true;
-    const logDate = new Date(log.time);
+    const logDate = new Date(log.transferredAt);
     const start = startDate ? new Date(startDate) : null;
     const end = endDate ? new Date(endDate) : null;
     return (!start || logDate >= start) && (!end || logDate <= end);
   };
 
   // Filters
-  const filteredReports = reports
-    .filter((r) => r.status === "Pending")
-    .filter(
-      (r) =>
-        r.name.toLowerCase().includes(searchReports.toLowerCase()) ||
-        r.date.includes(searchReports)
-    );
+  const filteredReports = reports.filter(
+    (r) =>
+      r.name.toLowerCase().includes(searchReports.toLowerCase()) ||
+      r.date.includes(searchReports)
+  );
 
-  const filteredLogs = logs
-    .filter(
-      (log) =>
-        log.name.toLowerCase().includes(searchLogs.toLowerCase()) &&
-        isWithinDateRange(log)
-    );
+  const filteredLogs = logs.filter(
+    (log) =>
+      log.reportName.toLowerCase().includes(searchLogs.toLowerCase()) &&
+      isWithinDateRange(log)
+  );
 
   const sortedLogs = [...filteredLogs].sort(
-    (a, b) => new Date(b.time) - new Date(a.time)
+    (a, b) => new Date(b.transferredAt) - new Date(a.transferredAt)
   );
 
   // Stats
-  const totalReports = reports.length + logs.filter(l => l.status === "Synced" || l.status === "Failed").length;
-  const syncedReports = logs.filter((l) => l.status === "Synced").length;
-  const pendingReports = reports.filter((r) => r.status === "Pending").length;
+  const totalReports = reports.length + logs.filter(l => l.status === 'synced' || l.status === 'failed').length;
+  const syncedReports = logs.filter((l) => l.status === 'synced').length;
+  const pendingReports = reports.filter((r) => r.status === 'pending').length;
+
+  if (loading) {
+    return (
+      <div className="container my-4 text-center">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container my-4 ops-page">
+      {error && (
+        <div className="alert alert-danger alert-dismissible fade show" role="alert">
+          {error}
+          <button type="button" className="btn-close" onClick={() => setError(null)}></button>
+        </div>
+      )}
+
+      {/* New Reports Notification Alert */}
+      {newReportsAlert && (
+        <div 
+          className="alert alert-primary alert-dismissible fade show position-fixed shadow-lg" 
+          style={{
+            top: '80px', 
+            right: '20px', 
+            zIndex: 9999, 
+            minWidth: '380px', 
+            maxWidth: '500px',
+            animation: 'slideInRight 0.4s ease-out'
+          }}
+        >
+          <div className="d-flex align-items-center mb-2">
+            <span className="fs-3 me-2">📥</span>
+            <strong className="fs-5">New Reports Uploaded!</strong>
+          </div>
+          <p className="mb-2">
+            <strong>{newReportsAlert.count}</strong> new report(s) have been added to the queue and are ready to sync:
+          </p>
+          <ul className="mb-3 ps-3" style={{maxHeight: '120px', overflowY: 'auto'}}>
+            {newReportsAlert.reports.slice(0, 5).map((name, idx) => (
+              <li key={idx} className="small mb-1">
+                <code>{name}</code>
+              </li>
+            ))}
+            {newReportsAlert.reports.length > 5 && (
+              <li className="small text-muted">
+                ...and {newReportsAlert.reports.length - 5} more
+              </li>
+            )}
+          </ul>
+          <div className="d-flex gap-2">
+            <button 
+              type="button" 
+              className="btn btn-sm btn-primary"
+              onClick={async () => {
+                await fetchPendingReports();
+                setNewReportsAlert(null);
+              }}
+            >
+              <i className="bi bi-arrow-clockwise me-1"></i>
+              Refresh Reports
+            </button>
+            <button 
+              type="button" 
+              className="btn btn-sm btn-outline-secondary"
+              onClick={() => setNewReportsAlert(null)}
+            >
+              Dismiss
+            </button>
+          </div>
+          <button 
+            type="button" 
+            className="btn-close position-absolute top-0 end-0 m-2" 
+            onClick={() => setNewReportsAlert(null)}
+          ></button>
+        </div>
+      )}
+
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2 className="fw-bold">Operations Dashboard</h2>
+        <h2 className="fw-bold">Reports & Logs</h2>
         <div className="position-relative">
           <button
             className="btn btn-outline-primary position-relative"
@@ -278,7 +376,7 @@ const OpsPage = () => {
             className="btn btn-success btn-sm"
             disabled={pendingReports === 0 || isSyncing}
           >
-            Sync All
+            {isSyncing ? 'Syncing...' : 'Sync All'}
           </button>
         </div>
 
@@ -307,7 +405,7 @@ const OpsPage = () => {
                         className="btn btn-primary btn-sm"
                         disabled={isSyncing}
                       >
-                        Sync
+                        {isSyncing ? 'Syncing...' : 'Sync'}
                       </button>
                     </td>
                   </tr>
@@ -326,7 +424,7 @@ const OpsPage = () => {
 
       {/* Transfer logs */}
       <div>
-        <h4 className="mb-2 fw-semibold">Transfer Logs</h4>
+        <h4 className="mb-2 fw-semibold">Activity Logs</h4>
         <div className="d-flex mb-3 gap-2 flex-wrap align-items-center">
           <input
             type="text"
@@ -340,14 +438,20 @@ const OpsPage = () => {
             <input
               type="date"
               value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
+              onChange={(e) => {
+                setStartDate(e.target.value);
+                fetchTransferLogs();
+              }}
               className="form-control"
             />
             <label>To:</label>
             <input
               type="date"
               value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
+              onChange={(e) => {
+                setEndDate(e.target.value);
+                fetchTransferLogs();
+              }}
               className="form-control"
             />
           </div>
@@ -370,21 +474,21 @@ const OpsPage = () => {
                 sortedLogs.map((log) => (
                   <tr key={log.id} className="fade-in">
                     <td>{log.id}</td>
-                    <td>{log.name}</td>
+                    <td>{log.reportName}</td>
                     <td>{log.reportDate}</td>
                     <td
                       className={
-                        log.status === "Synced"
+                        log.status === 'synced'
                           ? "text-success fw-bold"
                           : "text-danger fw-bold"
                       }
                     >
                       {log.status}
-                      {log.error && <span className="ms-1" title={log.error}>❗</span>}
+                      {log.errorMessage && <span className="ms-1" title={log.errorMessage}>❗</span>}
                     </td>
                     <td>{log.folder}</td>
                     <td>
-                      {new Date(log.time).toLocaleString("en-IN", {
+                      {new Date(log.transferredAt).toLocaleString("en-IN", {
                         dateStyle: "medium",
                         timeStyle: "short",
                       })}
